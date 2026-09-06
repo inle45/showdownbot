@@ -208,7 +208,12 @@ def damage_fraction(
         return 0.0
     low, high = rolls
     planned = low + (high - low) * percentile
-    return planned / max(1.0, current_hp(defender, battle.gen))
+    # current_hp() plancherise a 1 PV brut pour eviter une division par zero,
+    # mais la FRACTION, elle, doit rester plafonnee a 1.0: sur un defenseur
+    # presque KO (PV reels ~1), des degats bruts normaux donnent sinon des
+    # fractions absurdes (des centaines de %) qui polluent le score d'urgence
+    # en aval (bug observe en combat reel: urgence de switch a 399.70).
+    return min(1.0, planned / max(1.0, current_hp(defender, battle.gen)))
 
 
 def incoming_damage_fraction(
@@ -229,7 +234,7 @@ def incoming_damage_fraction(
     if not known_damaging:
         low, high = _fallback_damage(attacker, defender, type_chart, battle.gen)
         planned = low + (high - low) * percentile
-        worst = planned / max(1.0, current_hp(defender, battle.gen))
+        worst = min(1.0, planned / max(1.0, current_hp(defender, battle.gen)))
 
     return worst
 

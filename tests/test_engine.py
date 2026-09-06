@@ -89,6 +89,29 @@ class TestDecisions(unittest.TestCase):
         self.assertIn("matchup", payload["context"])
         self.assertIn("predicted_incoming_fraction", payload["context"])
 
+    def test_degats_plafonnes_a_100_pourcent_sur_pv_presque_nuls(self):
+        """Regression: un Pokemon presque KO ne doit jamais produire une
+        fraction de degats ou une urgence de switch aberrantes.
+
+        Bug reel trouve via un rapport d'analyse post-combat: current_hp()
+        plancherise les PV bruts a 1 pour eviter une division par zero, mais
+        sans plafond sur la fraction resultante, un defenseur a ~1 PV reel
+        recevant des degats bruts normaux produisait des fractions de
+        plusieurs centaines de %, et donc une "urgence de switch" a 399.70
+        au lieu d'une valeur exploitable.
+        """
+        battle = build_battle(
+            my_team=[
+                {"species": "Registeel", "moves": ["bodypress", "thunderwave"], "hp_fraction": 0.003},
+                {"species": "Garchomp", "moves": ["earthquake"]},
+            ],
+            opponent_species="Talonflame",
+            opponent_moves=["flareblitz"],
+        )
+        decision = decide_with(battle)
+        self.assertLessEqual(decision.context["predicted_incoming_fraction"], 1.0)
+        self.assertLess(decision.context["switch_urgency"], 10.0)
+
 
 class TestParameterEffects(unittest.TestCase):
     """Verifie le champ 'effect' de chaque parametre du registre."""
