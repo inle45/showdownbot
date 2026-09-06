@@ -183,4 +183,5 @@ def build_player(
         log_level=log_level,
         on_battle_end=on_battle_end,
         server_label=settings.server,
+        open_spectator=settings.termux_open_spectator,
     )

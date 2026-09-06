@@ -171,6 +171,7 @@ class Settings:
     tuning_mode: str = "propose"
     enable_ladder: bool = False
     termux_notifications: bool = False
+    termux_open_spectator: bool = False
     extra: Dict[str, str] = field(default_factory=dict)
 
     @property
@@ -215,4 +216,5 @@ def load_settings(env_path: Optional[str] = None) -> Settings:
         tuning_mode=os.environ.get("TUNING_MODE", "propose").strip().lower(),
         enable_ladder=_as_bool(os.environ.get("ENABLE_LADDER", "")),
         termux_notifications=_as_bool(os.environ.get("TERMUX_NOTIFICATIONS", "")),
+        termux_open_spectator=_as_bool(os.environ.get("TERMUX_OPEN_SPECTATOR", "")),
     )

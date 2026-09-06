@@ -32,6 +32,7 @@ class HeuristicPlayer(Player):
         *args,
         on_battle_end: Optional[Callable[[BattleLog], None]] = None,
         server_label: str = "local",
+        open_spectator: bool = False,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -39,6 +40,7 @@ class HeuristicPlayer(Player):
         self.engine = HeuristicEngine(config)
         self.on_battle_end = on_battle_end
         self.server_label = server_label
+        self.open_spectator = open_spectator
         self.logs: Dict[str, BattleLog] = {}
         self.finished_logs: List[BattleLog] = []
 
@@ -55,10 +57,12 @@ class HeuristicPlayer(Player):
             # niveau module, un import en tete de ce fichier bouclerait.
             from bot.connection import spectator_url
 
-            LOGGER.info(
-                "Nouveau combat: %s | lien spectateur: %s",
-                battle.battle_tag, spectator_url(battle.battle_tag, self.server_label),
-            )
+            url = spectator_url(battle.battle_tag, self.server_label)
+            LOGGER.info("Nouveau combat: %s | lien spectateur: %s", battle.battle_tag, url)
+            if self.open_spectator:
+                from bot import termux
+
+                termux.open_url(url)
         return log
 
     def choose_move(self, battle: AbstractBattle) -> BattleOrder:

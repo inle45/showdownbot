@@ -47,6 +47,17 @@ def release_wake_lock() -> bool:
     return _run(["termux-wake-unlock"])
 
 
+def open_url(url: str) -> bool:
+    """Ouvre un lien dans le navigateur par defaut du telephone.
+
+    Necessite `pkg install termux-api`. Utilise pour le lien spectateur d'un
+    combat: copier une URL depuis un terminal etroit sur telephone est
+    penible (elle se coupe sur plusieurs lignes, la selection tactile en perd
+    des morceaux) - l'ouvrir directement evite ce probleme entierement.
+    """
+    return _run(["termux-open-url", url])
+
+
 def notify(title: str, content: str, notification_id: str = "showdownbot") -> bool:
     """Notification Android de fin de combat. Necessite `pkg install termux-api`."""
     return _run(
