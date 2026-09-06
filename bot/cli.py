@@ -32,6 +32,11 @@ def configure_logging(verbose: bool = False) -> None:
     logging.getLogger("poke-env").setLevel(logging.WARNING)
 
 
+def player_log_level(verbose: bool) -> int:
+    """Niveau des loggers de poke-env, qui tracent tout le protocole en INFO."""
+    return logging.DEBUG if verbose else logging.WARNING
+
+
 def make_battle_end_handler(settings):
     """Traitement de fin de combat: analyse, consolidation, reglage.
 
@@ -131,12 +136,15 @@ def _consolidate_and_tune(settings) -> None:
 # --------------------------------------------------------------- commandes jeu
 
 
-def _run_session(settings, config, task, target_battles: int, label: str) -> int:
+def _run_session(settings, config, task, target_battles: int, label: str,
+                 log_level: int = logging.WARNING) -> int:
     handler = make_battle_end_handler(settings)
     termux.acquire_wake_lock()
     try:
         supervisor = ConnectionSupervisor(
-            player_factory=lambda: build_player(settings, config, on_battle_end=handler),
+            player_factory=lambda: build_player(
+                settings, config, on_battle_end=handler, log_level=log_level
+            ),
             policy=RetryPolicy(),
         )
         played = asyncio.run(supervisor.run(task, target_battles))
@@ -148,25 +156,44 @@ def _run_session(settings, config, task, target_battles: int, label: str) -> int
         termux.release_wake_lock()
 
 
+# Adversaires de reference, tous fournis par poke-env. Comparer le moteur a une
+# reference fixe est le seul moyen d'evaluer un changement de reglage sans
+# depenser d'appels API ni de parties de ladder.
+BASELINES = {
+    "random": ("bot.player", "RandomBaselinePlayer", "coups au hasard"),
+    "maxpower": ("poke_env.player", "MaxBasePowerPlayer", "toujours la puissance brute maximale"),
+    "heuristic": ("poke_env.player", "SimpleHeuristicsPlayer", "heuristiques de reference de poke-env"),
+}
+
+
 def cmd_selfplay(args, settings, config) -> int:
-    """Bot contre adversaire aleatoire, sur le serveur local."""
-    from bot.player import RandomBaselinePlayer
+    """Bot contre un adversaire de reference, sur le serveur local."""
+    import importlib
+
     from bot.connection import server_configuration
 
+    module_name, class_name, description = BASELINES[args.opponent]
+    opponent_class = getattr(importlib.import_module(module_name), class_name)
+
     handler = make_battle_end_handler(settings)
+    level = player_log_level(args.verbose)
+    LOGGER.info("Adversaire: %s (%s)", args.opponent, description)
 
     async def run():
-        player = build_player(settings, config, on_battle_end=handler)
-        opponent = RandomBaselinePlayer(
+        player = build_player(settings, config, on_battle_end=handler, log_level=level)
+        opponent = opponent_class(
             server_configuration=server_configuration(settings),
             battle_format=settings.battle_format,
             max_concurrent_battles=1,
+            log_level=level,
         )
         await player.battle_against(opponent, n_battles=args.battles)
+        won, total = player.n_won_battles, player.n_finished_battles
         LOGGER.info(
-            "Bilan: %s victoires / %s combats", player.n_won_battles, player.n_finished_battles
+            "Bilan contre %s: %s victoires / %s combats (%.0f%%)",
+            args.opponent, won, total, 100 * won / total if total else 0,
         )
-        return player.n_finished_battles
+        return total
 
     termux.acquire_wake_lock()
     try:
@@ -179,14 +206,20 @@ def cmd_challenge(args, settings, config) -> int:
     async def task(player, remaining):
         await player.send_challenges(args.opponent, n_challenges=remaining)
 
-    return _run_session(settings, config, task, args.battles, f"Defis a {args.opponent}")
+    return _run_session(
+        settings, config, task, args.battles, f"Defis a {args.opponent}",
+        log_level=player_log_level(args.verbose),
+    )
 
 
 def cmd_accept(args, settings, config) -> int:
     async def task(player, remaining):
         await player.accept_challenges(args.opponent, remaining)
 
-    return _run_session(settings, config, task, args.battles, "Defis acceptes")
+    return _run_session(
+        settings, config, task, args.battles, "Defis acceptes",
+        log_level=player_log_level(args.verbose),
+    )
 
 
 def cmd_ladder(args, settings, config) -> int:
@@ -209,7 +242,10 @@ def cmd_ladder(args, settings, config) -> int:
     async def task(player, remaining):
         await player.ladder(remaining)
 
-    return _run_session(settings, config, task, args.battles, "Ladder")
+    return _run_session(
+        settings, config, task, args.battles, "Ladder",
+        log_level=player_log_level(args.verbose),
+    )
 
 
 # ----------------------------------------------------------- commandes analyse
@@ -374,8 +410,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("-v", "--verbose", action="store_true", help="journalisation detaillee")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    selfplay = sub.add_parser("selfplay", help="bot contre adversaire aleatoire (serveur local)")
+    selfplay = sub.add_parser(
+        "selfplay", help="bot contre un adversaire de reference (serveur local)"
+    )
     selfplay.add_argument("--battles", type=int, default=1)
+    selfplay.add_argument(
+        "--opponent", choices=sorted(BASELINES), default="heuristic",
+        help="adversaire de reference (defaut: heuristic, le plus exigeant)",
+    )
     selfplay.set_defaults(func=cmd_selfplay)
 
     challenge = sub.add_parser("challenge", help="defier un utilisateur")

@@ -153,8 +153,14 @@ def build_player(
     config: HeuristicConfig,
     on_battle_end=None,
     account: Optional[AccountConfiguration] = None,
+    log_level: int = logging.WARNING,
 ) -> HeuristicPlayer:
-    """Fabrique un joueur configure pour le serveur cible."""
+    """Fabrique un joueur configure pour le serveur cible.
+
+    ``log_level`` est a WARNING par defaut: poke-env journalise chaque message du
+    protocole en INFO, ce qui noie completement la sortie utile sur l'ecran d'un
+    telephone. On remonte a DEBUG avec l'option -v du CLI.
+    """
     return HeuristicPlayer(
         config,
         account_configuration=account if account is not None else account_configuration(settings),
@@ -162,6 +168,7 @@ def build_player(
         battle_format=settings.battle_format,
         max_concurrent_battles=1,
         start_timer_on_battle_start=(settings.server == "online"),
+        log_level=log_level,
         on_battle_end=on_battle_end,
         server_label=settings.server,
     )

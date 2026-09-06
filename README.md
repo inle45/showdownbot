@@ -66,7 +66,7 @@ cache pour n'etre compiles qu'une fois. Detail complet dans
 source .venv/bin/activate
 
 # Jouer
-python -m bot.cli selfplay --battles 5      # contre un bot aleatoire (serveur local)
+python -m bot.cli selfplay --battles 5      # contre un adversaire de reference (serveur local)
 python -m bot.cli challenge <pseudo>        # defier quelqu'un
 python -m bot.cli accept --battles 3        # accepter les defis recus
 python -m bot.cli ladder --battles 10       # ladder public (opt-in, voir plus bas)
@@ -96,6 +96,29 @@ reglages qui porte la porte d'approbation du tuner.
 
 Le serveur n'ecoute que sur `127.0.0.1`. Ne passez `--host 0.0.0.0` que sur un
 reseau de confiance.
+
+## Evaluer une modification du moteur
+
+Avant de toucher aux reglages, mesurez. Trois adversaires de reference sont
+disponibles en local, sans cle API et sans partie de ladder :
+
+```bash
+python -m bot.cli selfplay --battles 40 --opponent random      # coups au hasard
+python -m bot.cli selfplay --battles 40 --opponent maxpower    # puissance brute maximale
+python -m bot.cli selfplay --battles 40 --opponent heuristic   # heuristiques de poke-env (defaut)
+```
+
+Reference mesuree avec la configuration livree (v1, valeurs par defaut) :
+
+| Adversaire | Resultat |
+| --- | --- |
+| `random` | 30 victoires / 30 |
+| `heuristic` (`SimpleHeuristicsPlayer`) | 27 victoires / 40, soit 68% |
+
+Sur 40 combats, l'incertitude est d'environ 7 points : 68% signifie « nettement
+au-dessus de 50% », pas « exactement 68% ». Pour comparer deux configurations,
+il faut plusieurs centaines de combats — c'est justement pourquoi le tuner ne se
+fie pas au winrate pour decider, seulement pour freiner.
 
 ## Lire les resultats
 
