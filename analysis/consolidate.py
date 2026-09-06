@@ -10,7 +10,6 @@ parametres racontent la meme histoire, par construction, et non deux histoires
 paralleles qui divergent.
 """
 
-import json
 import logging
 import os
 from datetime import datetime, timezone

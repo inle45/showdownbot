@@ -15,7 +15,7 @@ import os
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from analysis.client import AnalysisUnavailable, AnthropicAnalyst, record_usage
+from analysis.client import AnthropicAnalyst, record_usage
 from analysis.prompts import build_findings_schema, build_system_prompt, distill_battle
 from bot.config import BATTLES_DIR, UNMAPPED_PATH, load_taxonomy, load_tuning_rules
 

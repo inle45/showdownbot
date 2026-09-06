@@ -20,13 +20,7 @@ import unittest
 
 import bot  # noqa: F401
 from analysis.consolidate import aggregate_findings
-from analysis.tuner import (
-    ParamChange,
-    apply_proposal,
-    check_rollback,
-    net_scores,
-    propose,
-)
+from analysis.tuner import check_rollback, net_scores, propose
 from bot.config import load_config, load_taxonomy, load_tuning_rules, validate
 
 

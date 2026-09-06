@@ -18,7 +18,6 @@ from poke_env.battle import Battle, Move, MoveCategory, Pokemon, Status
 
 from bot.config import HeuristicConfig
 from bot.scoring import (
-    current_hp,
     damage_fraction,
     damage_range,
     hazard_layers,
@@ -27,7 +26,6 @@ from bot.scoring import (
     is_setup_move,
     matchup_score,
     outspeeds,
-    real_max_hp,
     revealed_move_names,
     status_targets_opponent,
     type_chart_for,

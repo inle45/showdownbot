@@ -12,7 +12,7 @@ import json
 import os
 from typing import Any, Dict, List, Optional
 
-from flask import Flask, abort, flash, redirect, render_template, request, url_for
+from flask import Flask, abort, flash, redirect, render_template, url_for
 
 import bot  # applique le shim orjson  # noqa: F401
 from analysis.client import load_usage

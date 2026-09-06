@@ -7,8 +7,6 @@ tourne ailleurs que sur Android, chaque fonction devient un no-op silencieux.
 import logging
 import shutil
 import subprocess
-from typing import Optional
-
 LOGGER = logging.getLogger("showdownbot.termux")
 
 _wake_lock_held = False

@@ -6,11 +6,11 @@ activee, la mise en file du combat pour un unique appel post-mortem.
 """
 
 import logging
-from typing import Any, Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 from poke_env.battle import AbstractBattle, Battle
 from poke_env.player import Player
-from poke_env.player.battle_order import BattleOrder, DefaultBattleOrder
+from poke_env.player.battle_order import BattleOrder
 
 from bot.battle_log import BattleLog, finalize, new_log
 from bot.config import HeuristicConfig
