@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "_comment": "Registre des parametres du moteur heuristique. Le moteur refuse de demarrer si config/heuristics.json contient une cle absente d'ici, ou une valeur hors bornes. Le tuner (analysis/tuner.py) ne peut modifier QUE des cles declarees ici, par pas de 'step', dans [min, max].",
+  "params": {
+    "switch.matchup_threshold": {
+      "type": "float", "min": -3.0, "max": 0.5, "step": 0.25, "default": -1.0,
+      "description": "Score de matchup en dessous duquel une urgence de switch commence a s'accumuler.",
+      "effect": "Augmenter => le bot switche plus tot face a un mauvais matchup."
+    },
+    "switch.incoming_damage_threshold": {
+      "type": "float", "min": 0.15, "max": 1.0, "step": 0.05, "default": 0.50,
+      "description": "Fraction des PV max encaissee en un tour au-dela de laquelle une urgence de switch s'accumule.",
+      "effect": "Augmenter => le bot tolere plus de degats avant de switcher (switche MOINS)."
+    },
+    "switch.momentum_cost": {
+      "type": "float", "min": 0.0, "max": 3.0, "step": 0.1, "default": 0.80,
+      "description": "Penalite fixe appliquee a tout switch (cout de tempo: l'adversaire attaque gratuitement).",
+      "effect": "Augmenter => le bot switche moins souvent. Principal garde-fou anti ping-pong."
+    },
+    "switch.min_score_advantage": {
+      "type": "float", "min": 0.0, "max": 2.0, "step": 0.1, "default": 0.30,
+      "description": "Marge dont le meilleur switch doit depasser la meilleure attaque pour etre joue.",
+      "effect": "Augmenter => le bot switche moins souvent."
+    },
+    "switch.hazard_penalty_per_layer": {
+      "type": "float", "min": 0.0, "max": 1.5, "step": 0.05, "default": 0.25,
+      "description": "Penalite par couche de hazards adverses appliquee au score de switch.",
+      "effect": "Augmenter => le bot switche moins quand des hazards sont poses."
+    },
+    "switch.low_hp_reluctance": {
+      "type": "float", "min": 0.0, "max": 2.0, "step": 0.1, "default": 0.50,
+      "description": "Reticence a envoyer un Pokemon deja bas en PV comme pivot.",
+      "effect": "Augmenter => le bot preserve davantage ses Pokemon affaiblis."
+    },
+    "attack.expected_damage_weight": {
+      "type": "float", "min": 0.5, "max": 3.0, "step": 0.1, "default": 1.00,
+      "description": "Poids de la fraction de PV infligee dans le score d'une attaque.",
+      "effect": "Augmenter => le bot privilegie la puissance brute sur les considerations de matchup."
+    },
+    "attack.ko_bonus": {
+      "type": "float", "min": 0.0, "max": 6.0, "step": 0.25, "default": 2.00,
+      "description": "Bonus quand l'attaque met KO au percentile de degats retenu.",
+      "effect": "Augmenter => le bot poursuit les KO de maniere plus agressive."
+    },
+    "attack.two_hko_bonus": {
+      "type": "float", "min": 0.0, "max": 3.0, "step": 0.25, "default": 0.75,
+      "description": "Bonus quand l'attaque met KO en deux tours (>= 50% des PV).",
+      "effect": "Augmenter => le bot valorise davantage la pression a moyen terme."
+    },
+    "attack.accuracy_weight": {
+      "type": "float", "min": 0.0, "max": 3.0, "step": 0.1, "default": 1.00,
+      "description": "Exposant applique a la precision du move (score *= accuracy ** poids).",
+      "effect": "Augmenter => le bot devient plus prudent sur les moves imprecis."
+    },
+    "attack.priority_bonus": {
+      "type": "float", "min": 0.0, "max": 3.0, "step": 0.1, "default": 0.60,
+      "description": "Bonus pour un move prioritaire quand le bot risque d'etre KO avant d'agir.",
+      "effect": "Augmenter => le bot cherche plus souvent le KO en priorite."
+    },
+    "attack.speed_control_bonus": {
+      "type": "float", "min": 0.0, "max": 2.0, "step": 0.1, "default": 0.50,
+      "description": "Bonus quand le bot agit avant l'adversaire et met KO.",
+      "effect": "Augmenter => le bot valorise davantage l'avantage de vitesse."
+    },
+    "attack.recoil_penalty": {
+      "type": "float", "min": 0.0, "max": 2.0, "step": 0.1, "default": 0.40,
+      "description": "Penalite proportionnelle au recul subi par le move.",
+      "effect": "Augmenter => le bot evite les moves a recul."
+    },
+    "status.base_value": {
+      "type": "float", "min": 0.0, "max": 2.5, "step": 0.1, "default": 0.60,
+      "description": "Valeur de base d'un move de statut utile (paralysie, brulure, sommeil...).",
+      "effect": "Augmenter => le bot joue plus souvent des statuts plutot que d'attaquer."
+    },
+    "status.min_target_hp_fraction": {
+      "type": "float", "min": 0.0, "max": 1.0, "step": 0.05, "default": 0.50,
+      "description": "PV minimum de la cible (fraction) en dessous desquels un statut n'a plus de valeur.",
+      "effect": "Augmenter => le bot renonce plus tot aux statuts sur cible affaiblie."
+    },
+    "setup.value": {
+      "type": "float", "min": 0.0, "max": 3.0, "step": 0.1, "default": 1.00,
+      "description": "Valeur d'un move de boost quand les conditions de securite sont reunies.",
+      "effect": "Augmenter => le bot cherche plus souvent a se booster."
+    },
+    "setup.min_hp_fraction": {
+      "type": "float", "min": 0.0, "max": 1.0, "step": 0.05, "default": 0.70,
+      "description": "PV minimum (fraction) requis pour envisager un boost.",
+      "effect": "Augmenter => le bot ne se boost que quand il est en pleine forme (boost MOINS)."
+    },
+    "setup.max_incoming_damage": {
+      "type": "float", "min": 0.0, "max": 1.0, "step": 0.05, "default": 0.35,
+      "description": "Degats entrants maximum toleres (fraction des PV) pour se permettre un boost.",
+      "effect": "Augmenter => le bot se boost meme sous pression (boost PLUS)."
+    },
+    "heal.value": {
+      "type": "float", "min": 0.0, "max": 3.0, "step": 0.1, "default": 1.20,
+      "description": "Valeur d'un move de soin quand le seuil de PV est franchi.",
+      "effect": "Augmenter => le bot se soigne plus volontiers."
+    },
+    "heal.hp_threshold": {
+      "type": "float", "min": 0.1, "max": 0.9, "step": 0.05, "default": 0.45,
+      "description": "Fraction de PV en dessous de laquelle un move de soin devient interessant.",
+      "effect": "Augmenter => le bot se soigne plus tot."
+    },
+    "risk.damage_roll_percentile": {
+      "type": "float", "min": 0.0, "max": 1.0, "step": 0.05, "default": 0.50,
+      "description": "Point de la fourchette de degats retenu pour NOS attaques (0 = roll minimum, 1 = roll maximum).",
+      "effect": "Augmenter => le bot est plus optimiste sur ses propres degats."
+    },
+    "risk.opponent_damage_roll_percentile": {
+      "type": "float", "min": 0.0, "max": 1.0, "step": 0.05, "default": 0.85,
+      "description": "Point de la fourchette retenu pour les degats ADVERSES (0 = optimiste, 1 = pessimiste).",
+      "effect": "Augmenter => le bot est plus pessimiste sur les degats qu'il va encaisser."
+    },
+    "tera.enabled": {
+      "type": "bool", "default": true,
+      "description": "Autorise la terastallisation.",
+      "effect": "Mettre a false desactive completement la tera."
+    },
+    "tera.min_score_gain": {
+      "type": "float", "min": 0.0, "max": 4.0, "step": 0.25, "default": 1.00,
+      "description": "Gain de score minimum exige pour depenser la tera du combat.",
+      "effect": "Augmenter => le bot garde sa tera plus longtemps."
+    }
+  }
+}

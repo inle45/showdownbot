@@ -1,0 +1,13 @@
+# Dependances du BOT seul. Aucune extension native requise sur Termux/ARM:
+# tout est pur Python, ou dispose d'un repli pur Python.
+#
+# poke-env s'installe avec --no-deps (voir scripts/termux_setup.sh): ses
+# dependances numpy/gymnasium/pettingzoo ne servent qu'a poke_env.environment
+# (l'enveloppe RL Gymnasium), que ce projet n'importe jamais, et son orjson est
+# remplace par le shim stdlib de compat/orjson.py quand le vrai est absent.
+poke-env==0.16.1
+websockets==16.1.1  # epingle exactement par poke-env 0.16.1
+requests>=2.31
+tabulate>=0.9
+python-dotenv>=1.0
+Flask>=3.0

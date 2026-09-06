@@ -1,0 +1,7 @@
+# Couche d'analyse LLM, volontairement separee: le bot joue et logge sans elle.
+# Sur Termux, pydantic-core et jiter n'existent qu'en wheels manylinux
+# (incompatibles bionic) et se compilent depuis les sources => `pkg install rust`
+# est requis avant. scripts/termux_setup.sh met les wheels construits en cache
+# dans ~/.cache/showdownbot-wheels pour que les reinstallations soient instantanees.
+-r requirements-core.txt
+anthropic>=1.4.0,<2

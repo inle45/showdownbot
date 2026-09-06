@@ -1,0 +1,114 @@
+{
+  "taxonomy_version": 1,
+  "_comment": "Vocabulaire FERME des observations. L'appel post-combat ne peut emettre que ces tags (contrainte par enum dans le schema JSON de structured outputs). 'antagonist' definit les paires opposees, nettees par le tuner avant tout ajustement: c'est le garde-fou anti-oscillation.",
+  "findings": {
+    "STAYED_IN_TYPE_DISADVANTAGE": {
+      "polarity": "negative", "antagonist": "SWITCHED_TOO_EAGERLY",
+      "description": "Le bot a garde son Pokemon actif alors que le matchup etait clairement defavorable et qu'un switch raisonnable existait dans l'equipe."
+    },
+    "SWITCHED_TOO_EAGERLY": {
+      "polarity": "negative", "antagonist": "STAYED_IN_TYPE_DISADVANTAGE",
+      "description": "Le bot a switche alors que rester et attaquer etait meilleur: il a offert un tour gratuit a l'adversaire sans gain de position."
+    },
+    "FLIP_FLOP_SWITCHING": {
+      "polarity": "negative", "antagonist": null,
+      "description": "Le bot a alterne entre deux Pokemon sur plusieurs tours consecutifs sans progresser, perdant du tempo a chaque aller-retour."
+    },
+    "SWITCHED_INTO_HEAVY_DAMAGE": {
+      "polarity": "negative", "antagonist": null,
+      "description": "Le pivot choisi a encaisse des degats lourds ou previsibles a l'entree: le switch etait peut-etre justifie, mais pas sur cette cible."
+    },
+    "OVERESTIMATED_OWN_DAMAGE": {
+      "polarity": "negative", "antagonist": "UNDERESTIMATED_OWN_DAMAGE",
+      "description": "Le bot a joue en supposant infliger plus de degats qu'en realite: une attaque censee mettre KO ne l'a pas fait, et le plan s'est effondre."
+    },
+    "UNDERESTIMATED_OWN_DAMAGE": {
+      "polarity": "negative", "antagonist": "OVERESTIMATED_OWN_DAMAGE",
+      "description": "Le bot a ete trop prudent sur ses propres degats: il a switche ou temporise alors que son attaque passait largement."
+    },
+    "UNDERESTIMATED_INCOMING_DAMAGE": {
+      "polarity": "negative", "antagonist": "OVERESTIMATED_INCOMING_DAMAGE",
+      "description": "Le bot a sous-estime les degats adverses et s'est fait KO alors qu'il pensait survivre."
+    },
+    "OVERESTIMATED_INCOMING_DAMAGE": {
+      "polarity": "negative", "antagonist": "UNDERESTIMATED_INCOMING_DAMAGE",
+      "description": "Le bot a surestime la menace adverse et a fui une situation qu'il controlait."
+    },
+    "MISSED_KO_OPPORTUNITY": {
+      "polarity": "negative", "antagonist": "CHASED_KO_TOO_HARD",
+      "description": "Une attaque disponible mettait KO (ou quasi) et le bot a joue autre chose."
+    },
+    "CHASED_KO_TOO_HARD": {
+      "polarity": "negative", "antagonist": "MISSED_KO_OPPORTUNITY",
+      "description": "Le bot a force une tentative de KO improbable au lieu de switcher, se soigner ou temporiser, et l'a paye."
+    },
+    "IGNORED_SPEED_TIER": {
+      "polarity": "negative", "antagonist": null,
+      "description": "Le bot a joue comme s'il agissait en premier alors qu'il etait plus lent (ou l'inverse), invalidant son plan du tour."
+    },
+    "MISSED_PRIORITY_KO": {
+      "polarity": "negative", "antagonist": null,
+      "description": "Un move prioritaire mettait KO un adversaire affaibli et plus rapide; le bot ne l'a pas joue."
+    },
+    "WASTED_STATUS_MOVE": {
+      "polarity": "negative", "antagonist": "MISSED_STATUS_OPPORTUNITY",
+      "description": "Le bot a joue un move de statut sans valeur (cible deja affectee, immunisee, ou sur le point de partir)."
+    },
+    "MISSED_STATUS_OPPORTUNITY": {
+      "polarity": "negative", "antagonist": "WASTED_STATUS_MOVE",
+      "description": "Un statut aurait change le combat (paralysie sur un sweeper, brulure sur un physique) et le bot a prefere attaquer."
+    },
+    "SETUP_AT_WRONG_TIME": {
+      "polarity": "negative", "antagonist": "MISSED_SETUP_OPPORTUNITY",
+      "description": "Le bot s'est boost sous pression et a perdu le Pokemon boost sans en tirer profit."
+    },
+    "MISSED_SETUP_OPPORTUNITY": {
+      "polarity": "negative", "antagonist": "SETUP_AT_WRONG_TIME",
+      "description": "Le bot avait un tour libre evident pour se booster et a prefere attaquer sans pression."
+    },
+    "HEALED_UNNECESSARILY": {
+      "polarity": "negative", "antagonist": "HEALED_TOO_LATE",
+      "description": "Le bot s'est soigne alors qu'il n'etait pas menace, offrant un tour gratuit."
+    },
+    "HEALED_TOO_LATE": {
+      "polarity": "negative", "antagonist": "HEALED_UNNECESSARILY",
+      "description": "Le bot avait un move de soin et est mort sans l'utiliser, ou l'a utilise trop tard pour survivre."
+    },
+    "IGNORED_HAZARDS": {
+      "polarity": "negative", "antagonist": "OVERVALUED_HAZARDS",
+      "description": "Le bot a multiplie les switchs sous hazards et s'est erode inutilement."
+    },
+    "OVERVALUED_HAZARDS": {
+      "polarity": "negative", "antagonist": "IGNORED_HAZARDS",
+      "description": "Le bot a refuse un switch necessaire par peur des hazards, pour un cout reel marginal."
+    },
+    "LOW_ACCURACY_GAMBLE": {
+      "polarity": "negative", "antagonist": "TOO_RISK_AVERSE",
+      "description": "Le bot a mise sur un move imprecis dans une position ou un choix sur etait disponible."
+    },
+    "TOO_RISK_AVERSE": {
+      "polarity": "negative", "antagonist": "LOW_ACCURACY_GAMBLE",
+      "description": "Le bot a evite une ligne clairement gagnante a cause d'un risque mineur, et a laisse filer la partie."
+    },
+    "TERA_WASTED": {
+      "polarity": "negative", "antagonist": "TERA_HOARDED",
+      "description": "La terastallisation a ete depensee pour un gain marginal, et a manque plus tard."
+    },
+    "TERA_HOARDED": {
+      "polarity": "negative", "antagonist": "TERA_WASTED",
+      "description": "Le bot a fini le combat sans terastalliser alors qu'un moment cle le justifiait clairement."
+    },
+    "SACRIFICED_KEY_POKEMON": {
+      "polarity": "negative", "antagonist": null,
+      "description": "Le bot a laisse mourir le Pokemon qui etait sa meilleure reponse a une menace adverse encore en vie."
+    },
+    "GOOD_DECISION": {
+      "polarity": "positive", "antagonist": null,
+      "description": "Decision ponctuelle clairement correcte, a conserver telle quelle."
+    },
+    "GOOD_SEQUENCING": {
+      "polarity": "positive", "antagonist": null,
+      "description": "Enchainement de plusieurs tours coherent qui a construit un avantage decisif."
+    }
+  }
+}

@@ -1,0 +1,13 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+logs/
+memory/battles/*.md
+memory/battles/*.json
+memory/lessons_learned.md
+memory/unmapped_findings.md
+memory/api_usage.jsonl
+config/pending_changes.json
+!memory/battles/.gitkeep

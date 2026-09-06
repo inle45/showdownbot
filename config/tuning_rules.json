@@ -1,0 +1,112 @@
+{
+  "rules_version": 1,
+  "_comment": "Table statique tag -> votes sur parametres. AUCUN LLM n'intervient ici: c'est ce fichier qui rend chaque mouvement de parametre explicable. 'direction' = sens de variation de la valeur ('+' augmente). Voir le champ 'effect' du parametre dans heuristics.schema.json pour savoir ce que cela produit.",
+  "controller": {
+    "window_battles": 10,
+    "min_battles_with_tag": 3,
+    "min_net_severity": 3.0,
+    "saturation_severity": 12.0,
+    "max_params_changed_per_cycle": 3,
+    "rollback": {
+      "enabled": true,
+      "evaluation_battles": 30,
+      "min_battles_before_verdict": 20,
+      "winrate_drop_threshold": 0.10,
+      "burn_cycles": 3
+    }
+  },
+  "rules": {
+    "STAYED_IN_TYPE_DISADVANTAGE": [
+      {"param": "switch.matchup_threshold", "direction": "+", "weight": 1.0, "rationale": "declencher l'urgence de switch plus tot"},
+      {"param": "switch.momentum_cost", "direction": "-", "weight": 0.5, "rationale": "rendre le switch moins couteux"}
+    ],
+    "SWITCHED_TOO_EAGERLY": [
+      {"param": "switch.matchup_threshold", "direction": "-", "weight": 1.0, "rationale": "exiger un matchup pire avant de fuir"},
+      {"param": "switch.momentum_cost", "direction": "+", "weight": 0.5, "rationale": "facturer le tempo perdu"},
+      {"param": "switch.min_score_advantage", "direction": "+", "weight": 0.5, "rationale": "exiger une meilleure alternative"}
+    ],
+    "FLIP_FLOP_SWITCHING": [
+      {"param": "switch.momentum_cost", "direction": "+", "weight": 1.0, "rationale": "penaliser les allers-retours"},
+      {"param": "switch.min_score_advantage", "direction": "+", "weight": 0.5, "rationale": "durcir le seuil de bascule"}
+    ],
+    "SWITCHED_INTO_HEAVY_DAMAGE": [
+      {"param": "risk.opponent_damage_roll_percentile", "direction": "+", "weight": 0.6, "rationale": "anticiper le pire roll a l'entree"},
+      {"param": "switch.momentum_cost", "direction": "+", "weight": 0.4, "rationale": "renforcer la reticence globale"}
+    ],
+    "OVERESTIMATED_OWN_DAMAGE": [
+      {"param": "risk.damage_roll_percentile", "direction": "-", "weight": 1.0, "rationale": "planifier sur des rolls plus bas"}
+    ],
+    "UNDERESTIMATED_OWN_DAMAGE": [
+      {"param": "risk.damage_roll_percentile", "direction": "+", "weight": 1.0, "rationale": "planifier sur des rolls plus hauts"}
+    ],
+    "UNDERESTIMATED_INCOMING_DAMAGE": [
+      {"param": "risk.opponent_damage_roll_percentile", "direction": "+", "weight": 1.0, "rationale": "etre plus pessimiste sur les degats subis"},
+      {"param": "switch.incoming_damage_threshold", "direction": "-", "weight": 0.5, "rationale": "declencher l'urgence de switch plus tot"}
+    ],
+    "OVERESTIMATED_INCOMING_DAMAGE": [
+      {"param": "risk.opponent_damage_roll_percentile", "direction": "-", "weight": 1.0, "rationale": "moins de pessimisme"},
+      {"param": "switch.incoming_damage_threshold", "direction": "+", "weight": 0.5, "rationale": "tolerer davantage de degats"}
+    ],
+    "MISSED_KO_OPPORTUNITY": [
+      {"param": "attack.ko_bonus", "direction": "+", "weight": 1.0, "rationale": "prioriser les lignes qui mettent KO"},
+      {"param": "attack.expected_damage_weight", "direction": "+", "weight": 0.3, "rationale": "peser davantage les degats bruts"}
+    ],
+    "CHASED_KO_TOO_HARD": [
+      {"param": "attack.ko_bonus", "direction": "-", "weight": 1.0, "rationale": "reduire l'attrait du KO incertain"}
+    ],
+    "IGNORED_SPEED_TIER": [
+      {"param": "attack.speed_control_bonus", "direction": "+", "weight": 1.0, "rationale": "integrer l'ordre d'action au score"}
+    ],
+    "MISSED_PRIORITY_KO": [
+      {"param": "attack.priority_bonus", "direction": "+", "weight": 1.0, "rationale": "valoriser la priorite en situation critique"}
+    ],
+    "WASTED_STATUS_MOVE": [
+      {"param": "status.base_value", "direction": "-", "weight": 1.0, "rationale": "baisser la valeur generique des statuts"},
+      {"param": "status.min_target_hp_fraction", "direction": "+", "weight": 0.5, "rationale": "renoncer plus tot sur cible affaiblie"}
+    ],
+    "MISSED_STATUS_OPPORTUNITY": [
+      {"param": "status.base_value", "direction": "+", "weight": 1.0, "rationale": "revaloriser les statuts"},
+      {"param": "status.min_target_hp_fraction", "direction": "-", "weight": 0.5, "rationale": "elargir la fenetre d'usage"}
+    ],
+    "SETUP_AT_WRONG_TIME": [
+      {"param": "setup.value", "direction": "-", "weight": 0.7, "rationale": "moins d'attrait pour le boost"},
+      {"param": "setup.min_hp_fraction", "direction": "+", "weight": 0.5, "rationale": "exiger plus de PV"},
+      {"param": "setup.max_incoming_damage", "direction": "-", "weight": 0.5, "rationale": "exiger un tour plus sur"}
+    ],
+    "MISSED_SETUP_OPPORTUNITY": [
+      {"param": "setup.value", "direction": "+", "weight": 0.7, "rationale": "plus d'attrait pour le boost"},
+      {"param": "setup.min_hp_fraction", "direction": "-", "weight": 0.5, "rationale": "autoriser le boost moins haut en PV"},
+      {"param": "setup.max_incoming_damage", "direction": "+", "weight": 0.5, "rationale": "tolerer un peu de pression"}
+    ],
+    "HEALED_UNNECESSARILY": [
+      {"param": "heal.hp_threshold", "direction": "-", "weight": 1.0, "rationale": "attendre d'etre plus bas"},
+      {"param": "heal.value", "direction": "-", "weight": 0.5, "rationale": "baisser l'attrait du soin"}
+    ],
+    "HEALED_TOO_LATE": [
+      {"param": "heal.hp_threshold", "direction": "+", "weight": 1.0, "rationale": "se soigner plus tot"},
+      {"param": "heal.value", "direction": "+", "weight": 0.5, "rationale": "augmenter l'attrait du soin"}
+    ],
+    "IGNORED_HAZARDS": [
+      {"param": "switch.hazard_penalty_per_layer", "direction": "+", "weight": 1.0, "rationale": "facturer l'erosion des switchs"}
+    ],
+    "OVERVALUED_HAZARDS": [
+      {"param": "switch.hazard_penalty_per_layer", "direction": "-", "weight": 1.0, "rationale": "ne pas bloquer un switch necessaire"}
+    ],
+    "LOW_ACCURACY_GAMBLE": [
+      {"param": "attack.accuracy_weight", "direction": "+", "weight": 1.0, "rationale": "penaliser davantage l'imprecision"}
+    ],
+    "TOO_RISK_AVERSE": [
+      {"param": "attack.accuracy_weight", "direction": "-", "weight": 1.0, "rationale": "accepter un risque raisonnable"},
+      {"param": "risk.opponent_damage_roll_percentile", "direction": "-", "weight": 0.4, "rationale": "moins de pessimisme defensif"}
+    ],
+    "TERA_WASTED": [
+      {"param": "tera.min_score_gain", "direction": "+", "weight": 1.0, "rationale": "exiger un gain plus net pour terastalliser"}
+    ],
+    "TERA_HOARDED": [
+      {"param": "tera.min_score_gain", "direction": "-", "weight": 1.0, "rationale": "terastalliser plus volontiers"}
+    ],
+    "SACRIFICED_KEY_POKEMON": [
+      {"param": "switch.low_hp_reluctance", "direction": "+", "weight": 0.7, "rationale": "preserver les Pokemon cles"}
+    ]
+  }
+}
