@@ -147,13 +147,20 @@ class AnthropicAnalyst:
         system: str,
         user_content: str,
         json_schema: Dict[str, Any],
-        max_tokens: int = 16000,
+        max_tokens: int = 24000,
     ) -> CallResult:
         """Un appel, une reponse JSON conforme au schema.
 
         ``output_config.format`` fait valider le schema par l'API elle-meme: les
         tags renvoyes ne peuvent PAS sortir du vocabulaire ferme, sans parsing
         fragile de notre cote. C'est le pilier du systeme de tuning.
+
+        Le raisonnement adaptatif (``thinking``) partage le meme budget que la
+        reponse finale: sur un effort eleve, il peut a lui seul consommer tout
+        ``max_tokens`` et laisser la reponse tronquee, sans bloc de texte. D'ou
+        une marge large, et l'appel en streaming plutot qu'un appel bloquant -
+        indispensable des que ``max_tokens`` depasse ~16000, pour ne pas risquer
+        un timeout HTTP en cours de generation sur une connexion lente.
         """
         started = time.monotonic()
 
@@ -163,7 +170,7 @@ class AnthropicAnalyst:
         if self.effort:
             output_config["effort"] = self.effort
 
-        response = self.client.messages.create(
+        with self.client.messages.stream(
             model=model,
             max_tokens=max_tokens,
             # Le prompt systeme (consignes + taxonomie) est identique d'un appel
@@ -174,7 +181,8 @@ class AnthropicAnalyst:
             messages=[{"role": "user", "content": user_content}],
             thinking={"type": "adaptive"},
             output_config=output_config,
-        )
+        ) as stream:
+            response = stream.get_final_message()
 
         duration = time.monotonic() - started
 
@@ -184,9 +192,21 @@ class AnthropicAnalyst:
                 f"{getattr(response.stop_details, 'explanation', '')}"
             )
 
+        if response.stop_reason == "max_tokens":
+            raise AnalysisUnavailable(
+                f"Reponse tronquee: le budget de {max_tokens} tokens a ete "
+                "entierement consomme (raisonnement inclus) avant la reponse "
+                "finale. Reessaie - le raisonnement adaptatif varie d'un appel "
+                "a l'autre - ou reduis ANALYSIS_EFFORT dans .env (high -> medium)."
+            )
+
         text = next((block.text for block in response.content if block.type == "text"), None)
         if text is None:
-            raise AnalysisUnavailable("Reponse sans bloc texte exploitable.")
+            block_types = [block.type for block in response.content]
+            raise AnalysisUnavailable(
+                f"Reponse sans bloc texte exploitable (stop_reason={response.stop_reason}, "
+                f"blocs recus: {block_types})."
+            )
 
         usage = response.usage
         result = CallResult(
