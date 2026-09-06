@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ log.battle_tag }}{% endblock %}
+{% block content %}
+<h1>{{ log.battle_tag }}</h1>
+<p>
+  <span class="tag tag-{{ 'win' if log.won else 'loss' }}">{{ log.result }}</span>
+  {{ log.turn_count }} tours - {{ log.started_at }} - config v{{ log.config_version }}
+</p>
+
+{% if has_report %}
+<article class="panel markdown">{{ report|safe }}</article>
+{% else %}
+<div class="panel">
+  <p class="muted">Ce combat n'a pas encore ete analyse.</p>
+  <p><code>python -m bot.cli analyse --all</code></p>
+</div>
+{% endif %}
+
+<section class="panel">
+  <h2>Trace de decision ({{ turns|length }} tours)</h2>
+  <p class="muted small">Ce que le bot voyait et ce qu'il a compare a chaque tour.
+  C'est exactement ce qui est envoye a l'analyse.</p>
+  {% for turn in turns %}
+    {% set d = turn.decision %}
+    {% if d.context %}
+    <details>
+      <summary>
+        T{{ turn.turn }} - {{ d.context.active }} vs {{ d.context.opponent }}
+        {% if d.chosen %}<code>{{ d.chosen.name }}</code>{% endif %}
+      </summary>
+      <div class="turn">
+        <p class="muted small">
+          matchup {{ d.context.matchup }} |
+          {{ 'plus rapide' if d.context.faster else 'plus lent' }} |
+          degats entrants prevus {{ (d.context.predicted_incoming_fraction * 100)|round|int }}% |
+          urgence switch {{ d.context.switch_urgency }}
+          {% if d.context.safety_override %} | <strong>garde-fou</strong>{% endif %}
+        </p>
+        <div class="scroll">
+        <table>
+          <thead><tr><th>Action</th><th>Score</th><th>Detail</th></tr></thead>
+          <tbody>
+          {% for c in d.candidates %}
+            <tr class="{{ 'chosen' if d.chosen and c.name == d.chosen.name else '' }}">
+              <td>{{ c.kind }} <code>{{ c.name }}</code></td>
+              <td>{{ c.score }}</td>
+              <td class="small">{% for k, v in c.components.items() %}{{ k }} {{ v }} {% endfor %}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </details>
+    {% endif %}
+  {% endfor %}
+</section>
+{% endblock %}

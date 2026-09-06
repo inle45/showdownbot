@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Lecons apprises{% endblock %}
+{% block content %}
+<h1>Lecons apprises</h1>
+{% if exists %}
+<article class="panel markdown">{{ lessons|safe }}</article>
+{% else %}
+<div class="panel">
+  <p class="muted">Pas encore de fiche de lecons.</p>
+  <p>Elle est generee automatiquement tous les N combats, ou a la demande:</p>
+  <p><code>python -m bot.cli consolidate</code></p>
+</div>
+{% endif %}
+{% endblock %}

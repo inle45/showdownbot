@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Combats{% endblock %}
+{% block content %}
+<h1>Combats</h1>
+{% if battles %}
+<ul class="battle-list">
+  {% for log in battles %}
+  {% set slug = log._path.split('/')[-1][:-5] %}
+  <li>
+    <a href="{{ url_for('battle', slug=slug) }}">
+      <span class="tag tag-{{ 'win' if log.won else 'loss' }}">{{ log.result }}</span>
+      <strong>{{ log.started_at }}</strong>
+      <span class="muted">{{ log.turn_count }} tours - config v{{ log.config_version }}</span>
+      {% if log.analysis %}
+        <span class="muted small">{{ log.analysis.summary }}</span>
+        {% if log.analysis.findings %}
+          <span class="chips">
+          {% for f in log.analysis.findings %}<span class="chip">{{ f.tag }}</span>{% endfor %}
+          </span>
+        {% endif %}
+      {% else %}
+        <span class="muted small">pas encore analyse</span>
+      {% endif %}
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">Aucun combat enregistre pour l'instant.</p>
+{% endif %}
+{% endblock %}

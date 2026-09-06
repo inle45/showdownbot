@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Bot Showdown{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+  <a class="brand" href="{{ url_for('dashboard') }}">Bot Showdown</a>
+  <nav>
+    <a href="{{ url_for('dashboard') }}">Tableau de bord</a>
+    <a href="{{ url_for('battles') }}">Combats</a>
+    <a href="{{ url_for('lessons') }}">Lecons</a>
+    <a href="{{ url_for('configuration') }}">Reglages</a>
+  </nav>
+</header>
+<main>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+<footer>Bot heuristique + analyse post-combat. Aucun appel API pendant un combat.</footer>
+</body>
+</html>

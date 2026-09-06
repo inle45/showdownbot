@@ -1,0 +1,189 @@
+/* Feuille de style unique, pensee pour un ecran de telephone tenu en main:
+   une seule colonne, cibles tactiles larges, tableaux qui defilent au lieu de
+   deborder. Aucune dependance, aucun chargement externe. */
+
+:root {
+  --bg: #12141a;
+  --panel: #1b1e26;
+  --panel-2: #232733;
+  --text: #e6e8ee;
+  --muted: #9aa1b1;
+  --accent: #6ea8fe;
+  --win: #3fb950;
+  --loss: #f85149;
+  --border: #2c3040;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --panel-2: #f0f2f5;
+    --text: #1b1f27;
+    --muted: #5a6272;
+    --accent: #1f6feb;
+    --border: #dfe3ea;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  padding-bottom: 3rem;
+}
+
+header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand { font-weight: 700; color: var(--text); text-decoration: none; font-size: 1.1rem; }
+
+nav { display: flex; gap: 1rem; margin-top: 0.5rem; overflow-x: auto; }
+nav a { color: var(--muted); text-decoration: none; white-space: nowrap; padding: 0.25rem 0; }
+nav a:hover { color: var(--accent); }
+
+main { max-width: 900px; margin: 0 auto; padding: 1rem; }
+
+h1 { font-size: 1.4rem; margin: 0.5rem 0 1rem; }
+h2 { font-size: 1.1rem; margin: 0 0 0.75rem; }
+h3 { font-size: 1rem; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+.panel.highlight { border-color: var(--accent); }
+
+.cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1rem; }
+@media (min-width: 620px) { .cards { grid-template-columns: repeat(4, 1fr); } }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.card .value { font-size: 1.5rem; font-weight: 700; }
+.card .label { color: var(--muted); font-size: 0.8rem; }
+
+.muted { color: var(--muted); }
+.small { font-size: 0.82rem; }
+
+code {
+  background: var(--panel-2);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.85em;
+  word-break: break-word;
+}
+
+/* Les tableaux debordent vite sur un telephone: on les fait defiler. */
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
+tr.chosen { background: rgba(110, 168, 254, 0.12); }
+
+.battle-list { list-style: none; padding: 0; margin: 0; }
+.battle-list li { border-bottom: 1px solid var(--border); }
+.battle-list li:last-child { border-bottom: none; }
+.battle-list a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 0;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  align-self: flex-start;
+}
+.tag-win { background: rgba(63, 185, 80, 0.18); color: var(--win); }
+.tag-loss { background: rgba(248, 81, 73, 0.18); color: var(--loss); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.chip {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  /* Les noms de tags sont longs; sur un ecran etroit ils doivent passer a la
+     ligne plutot que de deborder de leur cellule. */
+  white-space: normal;
+  word-break: break-word;
+}
+
+.spark { width: 100%; height: auto; }
+.spark-line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; }
+.spark-mid { stroke: var(--border); stroke-width: 1; stroke-dasharray: 4 4; }
+
+.actions { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+.button {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+.button.secondary { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
+
+.flash { padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid var(--border); }
+.flash-success { border-color: var(--win); }
+.flash-error { border-color: var(--loss); }
+
+details { border-bottom: 1px solid var(--border); padding: 0.5rem 0; }
+details:last-child { border-bottom: none; }
+summary { cursor: pointer; padding: 0.25rem 0; }
+.turn { padding: 0.5rem 0 0.5rem 0.5rem; }
+
+dl { display: grid; grid-template-columns: auto 1fr; gap: 0.4rem 1rem; margin: 0; font-size: 0.9rem; }
+dt { color: var(--muted); }
+dd { margin: 0; }
+
+blockquote {
+  margin: 0 0 1rem;
+  padding: 0.5rem 1rem;
+  border-left: 3px solid var(--accent);
+  color: var(--muted);
+}
+
+.markdown h1 { font-size: 1.3rem; }
+.markdown h2 { font-size: 1.05rem; margin-top: 1.5rem; }
+.markdown ul { padding-left: 1.2rem; }
+.markdown li { margin-bottom: 0.35rem; }
+.markdown hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.8rem;
+  padding: 2rem 1rem 1rem;
+}

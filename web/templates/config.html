@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Reglages{% endblock %}
+{% block content %}
+<h1>Reglages du moteur</h1>
+<p class="muted">Version {{ config.config_version }}. Ces valeurs sont les seules
+choses qui changent le jeu du bot. Aucune n'est consultee via l'API pendant un combat.</p>
+
+{% if pending %}
+<section class="panel highlight">
+  <h2>Ajustements proposes</h2>
+  <p class="muted small">
+    Fenetre de {{ pending.window_battles }} combats, winrate
+    {{ (pending.winrate * 100)|round|int }}%, depuis la config v{{ pending.from_version }}.
+  </p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Parametre</th><th>Avant</th><th>Apres</th><th>Declenche par</th></tr></thead>
+    <tbody>
+    {% for change in pending.changes %}
+      <tr>
+        <td><code>{{ change.param }}</code>
+          {% if change.rationale %}<div class="muted small">{{ change.rationale }}</div>{% endif %}
+        </td>
+        <td>{{ change.before }}</td>
+        <td><strong>{{ change.after }}</strong></td>
+        <td>{% for v in change.votes %}<span class="chip">{{ v }}</span>{% endfor %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <div class="actions">
+    <form method="post" action="{{ url_for('tune_apply') }}">
+      <button class="button" type="submit">Appliquer</button>
+    </form>
+    <form method="post" action="{{ url_for('tune_reject') }}">
+      <button class="button secondary" type="submit">Rejeter</button>
+    </form>
+  </div>
+  {% if pending.ignored %}
+  <details>
+    <summary>Observations ecartees ({{ pending.ignored|length }})</summary>
+    <ul>{% for reason in pending.ignored %}<li class="small">{{ reason }}</li>{% endfor %}</ul>
+  </details>
+  {% endif %}
+</section>
+{% else %}
+<section class="panel">
+  <p class="muted">Aucun ajustement en attente.</p>
+  <form method="post" action="{{ url_for('tune_recompute') }}">
+    <button class="button secondary" type="submit">Recalculer maintenant</button>
+  </form>
+  <p class="muted small">Recalcul local, sans appel API.</p>
+</section>
+{% endif %}
+
+<section class="panel">
+  <h2>Parametres actifs</h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Parametre</th><th>Valeur</th><th>Plage</th><th>Effet si on augmente</th></tr></thead>
+    <tbody>
+    {% for name, value in params %}
+      {% set spec = config.schema[name] %}
+      <tr>
+        <td><code>{{ name }}</code></td>
+        <td><strong>{{ value }}</strong>{% if spec.default != value %}
+          <span class="muted small">(defaut {{ spec.default }})</span>{% endif %}</td>
+        <td class="small">{% if spec.type == 'float' %}{{ spec.min }} - {{ spec.max }}
+          (pas {{ spec.step }}){% else %}booleen{% endif %}</td>
+        <td class="small">{{ spec.effect }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Historique</h2>
+  {% for entry in history %}
+  <details>
+    <summary>{{ entry.name }}
+      {% if entry.payload.rolled_back_version %}<span class="tag tag-loss">rollback</span>{% endif %}
+    </summary>
+    {% if entry.payload.proposal %}
+      <ul>
+      {% for change in entry.payload.proposal.changes %}
+        <li class="small">{{ change.description }}</li>
+      {% endfor %}
+      </ul>
+      <p class="muted small">Winrate avant: {{ (entry.payload.winrate_before * 100)|round|int }}%</p>
+    {% elif entry.payload.reverted_changes %}
+      <p class="small">Annulation: winrate
+        {{ (entry.payload.winrate_before * 100)|round|int }}% ->
+        {{ (entry.payload.winrate_after * 100)|round|int }}%
+        sur {{ entry.payload.battles_evaluated }} combats.</p>
+      <ul>{% for change in entry.payload.reverted_changes %}
+        <li class="small">{{ change.description }}</li>{% endfor %}</ul>
+    {% else %}
+      <p class="muted small">Configuration initiale.</p>
+    {% endif %}
+  </details>
+  {% endfor %}
+</section>
+{% endblock %}

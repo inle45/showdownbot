@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Tableau de bord</h1>
+
+<div class="cards">
+  <div class="card"><span class="value">{{ stats.battles }}</span><span class="label">combats</span></div>
+  <div class="card"><span class="value">{{ stats.winrate|pct }}</span><span class="label">winrate</span></div>
+  <div class="card"><span class="value">{{ stats.cost|money }}</span><span class="label">cout API total</span></div>
+  <div class="card"><span class="value">{{ stats.cost_per_battle|money }}</span><span class="label">par combat</span></div>
+</div>
+
+{% if pending %}
+<section class="panel highlight">
+  <h2>{{ pending.changes|length }} ajustement(s) en attente</h2>
+  <ul>
+    {% for change in pending.changes %}<li><code>{{ change.description }}</code></li>{% endfor %}
+  </ul>
+  <p><a class="button" href="{{ url_for('configuration') }}">Examiner et decider</a></p>
+</section>
+{% endif %}
+
+<section class="panel">
+  <h2>Winrate glissant</h2>
+  {{ sparkline|safe }}
+  <p class="muted">Moyenne sur 10 combats. La ligne mediane marque 50%.</p>
+</section>
+
+<section class="panel">
+  <h2>Erreurs les plus frequentes</h2>
+  {% if findings %}
+  <div class="scroll">
+  <table>
+    <thead><tr><th>Observation</th><th>Combats</th><th>Severite</th></tr></thead>
+    <tbody>
+      {% for row in findings %}
+      <tr>
+        <td>
+          <code>{{ row.tag }}</code>
+          <div class="muted small">{{ taxonomy[row.tag].description }}</div>
+        </td>
+        <td>{{ row.battles }}</td>
+        <td>{{ row.severity|round(0)|int }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p class="muted">Aucune analyse pour l'instant. Joue quelques combats, puis
+  <code>python -m bot.cli analyse --all</code>.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Derniers combats</h2>
+  {% if recent %}
+  <ul class="battle-list">
+    {% for log in recent %}
+    {% set slug = log._path.split('/')[-1][:-5] %}
+    <li>
+      <a href="{{ url_for('battle', slug=slug) }}">
+        <span class="tag tag-{{ 'win' if log.won else 'loss' }}">{{ log.result }}</span>
+        {{ log.started_at }} - {{ log.turn_count }} tours
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">Aucun combat enregistre.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Etat</h2>
+  <dl>
+    <dt>Serveur</dt><dd>{{ settings.server }} ({{ settings.battle_format }})</dd>
+    <dt>Ladder</dt><dd>{{ 'active' if settings.enable_ladder else 'desactive' }}</dd>
+    <dt>Analyse</dt><dd>{{ settings.analysis_model if settings.analysis_enabled else 'desactivee (pas de cle API)' }}</dd>
+    <dt>Mode de reglage</dt><dd>{{ settings.tuning_mode }}</dd>
+    <dt>Config moteur</dt><dd>v{{ config.config_version }}</dd>
+    <dt>Combats analyses</dt><dd>{{ stats.analysed }} / {{ stats.battles }}</dd>
+    <dt>Appels API</dt><dd>{{ stats.api_calls }}</dd>
+  </dl>
+</section>
+{% endblock %}

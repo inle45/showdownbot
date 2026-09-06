@@ -61,6 +61,7 @@ def build_battle(
     gen: int = 9,
     can_tera: bool = False,
     tera_type: Optional[str] = None,
+    turn: int = 1,
 ) -> Battle:
     """Construit un combat jouable a partir d'une description compacte.
 
@@ -118,6 +119,9 @@ def build_battle(
     # la seule facon dont le bot en prend connaissance en vrai.
     for move in opponent_moves or []:
         battle.parse_message(["", "move", f"p2a: {opponent_species}", move, f"p1a: {my_team[0]['species']}"])
+
+    if turn:
+        battle.parse_message(["", "turn", str(turn)])
 
     _ = opponent_stats  # les stats adverses sont estimees par bot.scoring
     return battle

@@ -267,13 +267,22 @@ class TestApplyAndBounds(unittest.TestCase):
 class TestRollback(unittest.TestCase):
     def setUp(self):
         self.history = tempfile.mkdtemp()
+        # check_rollback ecrit la config via save_config(config), qui suit
+        # config.path. Sans redirection, les tests ecraseraient le fichier de
+        # configuration livre avec le projet.
+        handle = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False)
+        handle.close()
+        self.config_path = handle.name
 
     def tearDown(self):
         shutil.rmtree(self.history, ignore_errors=True)
+        if os.path.exists(self.config_path):
+            os.unlink(self.config_path)
 
     def _prepare(self, winrate_before, results_after):
         config = load_config()
         config.params = dict(config.params)
+        config.path = self.config_path
         snapshot = {
             **config.to_dict(),
             "proposal": {
@@ -320,6 +329,21 @@ class TestRollback(unittest.TestCase):
         self.assertLess(result["winrate_after"], result["winrate_before"])
         marker = [n for n in os.listdir(self.history) if n.endswith(".rollback.json")]
         self.assertEqual(len(marker), 1)
+
+
+class TestShippedConfig(unittest.TestCase):
+    """La config versionnee doit rester les valeurs par defaut du registre.
+
+    Sans ce test, une suite mal isolee peut ecrire dans config/heuristics.json
+    et faire partir tout le monde de reglages deja derives, en silence.
+    """
+
+    def test_config_livree_est_la_v1_par_defaut(self):
+        config = load_config()
+        self.assertEqual(config.config_version, 1)
+        self.assertIsNone(config.derived_from)
+        defaults = {key: spec["default"] for key, spec in config.schema.items()}
+        self.assertEqual(config.params, defaults)
 
 
 if __name__ == "__main__":

@@ -139,8 +139,10 @@ def _format_turn(turn: Dict[str, Any]) -> List[str]:
     if decision.get("error"):
         return [f"T{turn.get('turn')} | ERREUR MOTEUR, coup aleatoire joue"]
 
+    # `or` et non `get(..., defaut)`: le contexte porte turn=0 tant que le
+    # serveur n'a pas envoye de |turn|, et 0 doit ceder au numero enregistre.
     header = (
-        f"T{context.get('turn', turn.get('turn'))} | "
+        f"T{context.get('turn') or turn.get('turn')} | "
         f"{context.get('active')} {int(100 * (context.get('active_hp_fraction') or 0))}%"
         f" vs {context.get('opponent')} {int(100 * (context.get('opponent_hp_fraction') or 0))}%"
         f" | matchup {context.get('matchup'):+.1f}"
