@@ -148,18 +148,28 @@ parametre.
 
 Deux appels seulement : un par combat, un tous les N combats.
 
-Mesure sur un combat reel : **environ 138 tokens par tour** de trace distillee,
-plus 1 400 tokens de prompt systeme (mis en cache). Soit pour un combat de 30
-tours : environ **5 500 tokens en entree** et 1 000 a 1 500 en sortie.
+**Mesure reelle** (2 analyses, combats de 22-25 tours, `claude-sonnet-5`,
+`ANALYSIS_EFFORT=medium`) : ~6 000 tokens en entree, mais **12 000 a 13 000
+tokens en sortie** — nettement plus que ce qu'on pourrait attendre d'un
+rapport de cette taille. Le raisonnement adaptatif du modele domine largement
+le cout, bien plus que le texte du rapport lui-meme, meme a effort "medium".
+Cout observe : **~0,14 $ par combat**.
 
-| Modele | Par combat | 100 combats + 10 consolidations |
+| Modele (effort medium) | Par combat (mesure) | 100 combats + 10 consolidations |
 | --- | --- | --- |
-| `claude-sonnet-5` (defaut) | ~0,03 $ | ~4 $ |
-| `claude-opus-5` | ~0,07 $ | ~9 $ |
-| `claude-haiku-4-5` | ~0,015 $ | ~2 $ |
+| `claude-sonnet-5` (defaut) | ~0,14 $ | ~15 $ |
+| `claude-opus-5` | ~0,35 $ (estime, meme volume de sortie) | ~38 $ |
+| `claude-haiku-4-5` | ~0,07 $ (estime) | ~8 $ |
 
-Ce sont des estimations. Le **cout reel** est mesure a chaque appel depuis
-`response.usage` et cumule dans `memory/api_usage.jsonl` :
+`ANALYSIS_EFFORT=high` a ete teste et **echoue systematiquement** sur cette
+tache (le raisonnement consomme a lui seul plus de 24 000 tokens sans jamais
+atteindre la reponse finale) : ne pas l'utiliser pour ces deux appels.
+`low` reduirait probablement le cout mais sa qualite n'a pas encore ete
+validee - a tester avant de l'adopter par defaut.
+
+Ce tableau vient d'une mesure reelle sur un petit echantillon, pas d'un calcul
+theorique. Le **cout reel de vos propres combats** est mesure a chaque appel
+depuis `response.usage` et cumule dans `memory/api_usage.jsonl` :
 
 ```bash
 python -m bot.cli status     # cout cumule et cout par combat observes
