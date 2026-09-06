@@ -51,6 +51,14 @@ class HeuristicPlayer(Player):
                 battle.battle_tag, self.format or "", self.config, server=self.server_label
             )
             self.logs[battle.battle_tag] = log
+            # Import differe: bot.connection importe deja HeuristicPlayer au
+            # niveau module, un import en tete de ce fichier bouclerait.
+            from bot.connection import spectator_url
+
+            LOGGER.info(
+                "Nouveau combat: %s | lien spectateur: %s",
+                battle.battle_tag, spectator_url(battle.battle_tag, self.server_label),
+            )
         return log
 
     def choose_move(self, battle: AbstractBattle) -> BattleOrder:

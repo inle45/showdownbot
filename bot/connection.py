@@ -42,6 +42,18 @@ def server_configuration(settings: Settings) -> ServerConfiguration:
     return LocalhostServerConfiguration
 
 
+def spectator_url(battle_tag: str, server_label: str) -> str:
+    """Lien pour suivre un combat en direct dans un navigateur.
+
+    Sur le serveur officiel, un salon de combat est directement accessible a
+    cette URL, sans compte requis pour observer. En local, le meme serveur
+    Node sert aussi le client web sur le meme port (voir LocalhostServerConfiguration).
+    """
+    if server_label == "online":
+        return f"https://play.pokemonshowdown.com/{battle_tag}"
+    return f"http://localhost:8000/{battle_tag}"
+
+
 def account_configuration(settings: Settings) -> Optional[AccountConfiguration]:
     """Compte Showdown, ou None pour un serveur local --no-security."""
     if not settings.username:
