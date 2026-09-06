@@ -7,6 +7,12 @@
   {{ log.turn_count }} tours - {{ log.started_at }} - config v{{ log.config_version }}
 </p>
 
+{% if has_replay %}
+<p><a class="button secondary" href="{{ url_for('battle_replay', slug=slug) }}" target="_blank">
+  Voir le replay anime
+</a></p>
+{% endif %}
+
 {% if has_report %}
 <article class="panel markdown">{{ report|safe }}</article>
 {% else %}

@@ -97,6 +97,12 @@ reglages qui porte la porte d'approbation du tuner.
 Le serveur n'ecoute que sur `127.0.0.1`. Ne passez `--host 0.0.0.0` que sur un
 reseau de confiance.
 
+Chaque page de combat propose aussi un **replay anime**, rendu par le meme
+moteur que le site officiel Showdown (poke-env stocke deja le protocole
+complet dans chaque log, rien a rejouer). Necessite une connexion internet
+sur le telephone au moment de le regarder: le rendu charge le script
+d'animation depuis play.pokemonshowdown.com.
+
 ## Evaluer une modification du moteur
 
 Avant de toucher aux reglages, mesurez. Trois adversaires de reference sont

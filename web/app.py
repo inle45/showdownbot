@@ -12,7 +12,7 @@ import json
 import os
 from typing import Any, Dict, List, Optional
 
-from flask import Flask, abort, flash, redirect, render_template, url_for
+from flask import Flask, Response, abort, flash, redirect, render_template, url_for
 
 import bot  # applique le shim orjson  # noqa: F401
 from analysis.client import load_usage
@@ -20,6 +20,7 @@ from analysis.tuner import apply_proposal, clear_pending, load_pending, propose,
 from bot.battle_log import load_all
 from bot.config import HISTORY_DIR, LESSONS_PATH, load_config, load_settings, load_taxonomy
 from web.markdown import render as render_markdown
+from web.replay import build_replay_html
 from web.stats import finding_frequency, rolling_winrate, sparkline_svg, summarise
 
 app = Flask(__name__)
@@ -92,7 +93,26 @@ def battle(slug: str):
         report=render_markdown(report),
         has_report=bool(report),
         turns=log.get("turns", []),
+        has_replay=bool(log.get("protocol")),
     )
+
+
+@app.route("/battle/<slug>/replay")
+def battle_replay(slug: str):
+    """Replay anime, rendu par le meme moteur que le site officiel Showdown.
+
+    Page independante (pas un fragment du dashboard): l'animation charge son
+    propre script externe et gere son propre defilement, un iframe imbrique
+    dans notre mise en page mobile poserait plus de problemes qu'il n'en
+    resoudrait.
+    """
+    log = _find_battle(slug)
+    if log is None:
+        abort(404)
+    html = build_replay_html(log, player_username=load_settings().username or None)
+    if html is None:
+        abort(404, "Ce combat n'a pas de protocole enregistre, pas de replay possible.")
+    return Response(html, mimetype="text/html")
 
 
 @app.route("/lessons")
