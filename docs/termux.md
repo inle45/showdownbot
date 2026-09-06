@@ -118,6 +118,14 @@ sans aucun serveur.
 
 ## Depannage
 
+**`Reponse tronquee: le budget de X tokens a ete entierement consomme`**
+L'appel API a reussi (200 OK) mais le raisonnement adaptatif a consomme tout le
+budget avant d'ecrire la reponse finale. `ANALYSIS_EFFORT=high` y est
+particulierement expose sur cette tache de classification ; `medium` (le
+defaut) suffit largement et laisse assez de marge. Si ca persiste meme en
+`medium`, relancez simplement - le raisonnement adaptatif varie d'un appel a
+l'autre a effort egal.
+
 **`ModuleNotFoundError: No module named 'orjson'`**
 Le shim ne s'est pas active. Verifiez que vous importez bien `bot` avant
 `poke_env` (tous les points d'entree du projet le font).

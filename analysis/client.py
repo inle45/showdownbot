@@ -147,7 +147,7 @@ class AnthropicAnalyst:
         system: str,
         user_content: str,
         json_schema: Dict[str, Any],
-        max_tokens: int = 24000,
+        max_tokens: int = 32000,
     ) -> CallResult:
         """Un appel, une reponse JSON conforme au schema.
 
