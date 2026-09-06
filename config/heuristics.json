@@ -1,7 +1,6 @@
 {
-  "_comment": "Valeurs actives du moteur heuristique. Modifiable a la main OU par analysis/tuner.py. Toute cle doit exister dans heuristics.schema.json.",
-  "config_version": 1,
-  "derived_from": null,
+  "config_version": 3,
+  "derived_from": "rollback de v2",
   "params": {
     "switch.matchup_threshold": -1.0,
     "switch.incoming_damage_threshold": 0.5,
@@ -27,5 +26,6 @@
     "risk.opponent_damage_roll_percentile": 0.85,
     "tera.enabled": true,
     "tera.min_score_gain": 1.0
-  }
+  },
+  "_comment": "Valeurs actives du moteur heuristique. Modifiable a la main OU par analysis/tuner.py. Toute cle doit exister dans heuristics.schema.json."
 }
