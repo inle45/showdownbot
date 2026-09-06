@@ -165,6 +165,7 @@ def consolidate(
     window: int = 10,
     model: str = "claude-sonnet-5",
     effort: str = "high",
+    thinking: bool = False,
     directory: str = BATTLES_DIR,
     analyst: Optional[AnthropicAnalyst] = None,
 ) -> Dict[str, Any]:
@@ -193,7 +194,7 @@ def consolidate(
         ]
     )
 
-    analyst = analyst or AnthropicAnalyst(api_key=api_key, effort=effort)
+    analyst = analyst or AnthropicAnalyst(api_key=api_key, effort=effort, thinking=thinking)
     result = analyst.structured_call(
         model=model,
         system=build_consolidation_system(taxonomy),

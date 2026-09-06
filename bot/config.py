@@ -166,6 +166,7 @@ class Settings:
     analysis_model: str = "claude-sonnet-5"
     consolidation_model: str = "claude-sonnet-5"
     analysis_effort: str = "high"
+    analysis_thinking: bool = False
     consolidate_every: int = 10
     tuning_mode: str = "propose"
     enable_ladder: bool = False
@@ -209,6 +210,7 @@ def load_settings(env_path: Optional[str] = None) -> Settings:
         analysis_model=os.environ.get("ANALYSIS_MODEL", "claude-sonnet-5"),
         consolidation_model=os.environ.get("CONSOLIDATION_MODEL", "claude-sonnet-5"),
         analysis_effort=os.environ.get("ANALYSIS_EFFORT", "high"),
+        analysis_thinking=_as_bool(os.environ.get("ANALYSIS_THINKING", "")),
         consolidate_every=int(os.environ.get("CONSOLIDATE_EVERY", "10") or 10),
         tuning_mode=os.environ.get("TUNING_MODE", "propose").strip().lower(),
         enable_ladder=_as_bool(os.environ.get("ENABLE_LADDER", "")),

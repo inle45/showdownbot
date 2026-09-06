@@ -64,6 +64,7 @@ def make_battle_end_handler(settings):
                 api_key=settings.anthropic_api_key,
                 model=settings.analysis_model,
                 effort=settings.analysis_effort,
+                thinking=settings.analysis_thinking,
             )
             LOGGER.info(
                 "Analyse ecrite: %s (%s observations, $%.4f)",
@@ -94,6 +95,7 @@ def _consolidate_and_tune(settings) -> None:
             window=settings.consolidate_every,
             model=settings.consolidation_model,
             effort=settings.analysis_effort,
+            thinking=settings.analysis_thinking,
         )
         LOGGER.info("Fiche de lecons mise a jour: %s", summary["headline"])
     except AnalysisUnavailable as error:
@@ -271,6 +273,7 @@ def cmd_analyse(args, settings, config) -> int:
                 api_key=settings.anthropic_api_key,
                 model=settings.analysis_model,
                 effort=settings.analysis_effort,
+                thinking=settings.analysis_thinking,
             )
         except AnalysisUnavailable as error:
             print(f"Analyse impossible: {error}", file=sys.stderr)
@@ -294,6 +297,7 @@ def cmd_consolidate(args, settings, config) -> int:
             window=args.window or settings.consolidate_every,
             model=settings.consolidation_model,
             effort=settings.analysis_effort,
+            thinking=settings.analysis_thinking,
         )
     except AnalysisUnavailable as error:
         print(f"Consolidation impossible: {error}", file=sys.stderr)

@@ -146,30 +146,42 @@ parametre.
 
 ## Cout API
 
-Deux appels seulement : un par combat, un tous les N combats.
+Deux appels seulement : un par combat, un tous les N combats. C'est le levier
+le plus important pour garder le cout viable sur beaucoup de combats, donc
+voici l'historique honnete de ce qui a ete mesure, pas seulement le reglage
+final.
 
-**Mesure reelle** (2 analyses, combats de 22-25 tours, `claude-sonnet-5`,
-`ANALYSIS_EFFORT=medium`) : ~6 000 tokens en entree, mais **12 000 a 13 000
-tokens en sortie** — nettement plus que ce qu'on pourrait attendre d'un
-rapport de cette taille. Le raisonnement adaptatif du modele domine largement
-le cout, bien plus que le texte du rapport lui-meme, meme a effort "medium".
-Cout observe : **~0,14 $ par combat**.
+**Ce qui a ete mesure en conditions reelles** (2 analyses, combats de 22-25
+tours, `claude-sonnet-5`) : ~6 000 tokens en entree, mais **12 000 a 13 000
+tokens en sortie** — soit ~0,14 $ par combat. Le raisonnement adaptatif du
+modele (extended thinking) dominait largement ce cout, bien plus que le texte
+du rapport lui-meme. Point important : ce chiffre a ete observe a
+`ANALYSIS_EFFORT=low`, le niveau le plus bas du dial d'effort - **abaisser
+l'effort n'a quasiment rien change**. `high` a par ailleurs echoue de facon
+repetee (le raisonnement consommait plus de 24 000 tokens sans jamais
+atteindre la reponse finale).
 
-| Modele (effort medium) | Par combat (mesure) | 100 combats + 10 consolidations |
+Le dial d'effort ne bornant pas ce cout comme attendu pour une tache de
+classification dans un vocabulaire ferme, le vrai levier etait ailleurs : le
+raisonnement interne est maintenant **desactive par defaut**
+(`ANALYSIS_THINKING=false`), pour cet appel precis, qui n'a pas besoin de
+"reflechir" longuement pour produire un JSON valide contraint par schema.
+Cette valeur par defaut n'a pas encore ete verifiee sur un vrai combat au
+moment d'ecrire ces lignes - a confirmer avec `python -m bot.cli status`
+apres vos premieres analyses.
+
+| Modele, raisonnement desactive | Par combat (attendu, a confirmer) | Par combat (mesure, raisonnement actif) |
 | --- | --- | --- |
-| `claude-sonnet-5` (defaut) | ~0,14 $ | ~15 $ |
-| `claude-opus-5` | ~0,35 $ (estime, meme volume de sortie) | ~38 $ |
-| `claude-haiku-4-5` | ~0,07 $ (estime) | ~8 $ |
+| `claude-sonnet-5` (defaut) | ~0,02-0,04 $ | ~0,14 $ |
+| `claude-haiku-4-5` | ~0,01-0,02 $ | ~0,07 $ (non mesure) |
 
-`ANALYSIS_EFFORT=high` a ete teste et **echoue systematiquement** sur cette
-tache (le raisonnement consomme a lui seul plus de 24 000 tokens sans jamais
-atteindre la reponse finale) : ne pas l'utiliser pour ces deux appels.
-`low` reduirait probablement le cout mais sa qualite n'a pas encore ete
-validee - a tester avant de l'adopter par defaut.
+Si la qualite des rapports sans raisonnement s'avere insuffisante,
+`ANALYSIS_THINKING=true` le reactive - au cout mesure ci-dessus, donc a
+n'envisager que pour un faible volume de combats.
 
-Ce tableau vient d'une mesure reelle sur un petit echantillon, pas d'un calcul
-theorique. Le **cout reel de vos propres combats** est mesure a chaque appel
-depuis `response.usage` et cumule dans `memory/api_usage.jsonl` :
+Le **cout reel de vos propres combats**, quel que soit le reglage, est mesure
+a chaque appel depuis `response.usage` et cumule dans
+`memory/api_usage.jsonl` :
 
 ```bash
 python -m bot.cli status     # cout cumule et cout par combat observes

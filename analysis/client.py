@@ -119,9 +119,17 @@ class AnthropicAnalyst:
     et le bot doit demarrer meme sans elle.
     """
 
-    def __init__(self, api_key: str = "", effort: str = "high"):
+    def __init__(self, api_key: str = "", effort: str = "high", thinking: bool = False):
         self.api_key = api_key
         self.effort = effort
+        # Desactive par defaut: mesure en conditions reelles sur un combat de
+        # 22-25 tours, le raisonnement adaptatif consommait 12000-13000 tokens
+        # de sortie MEME a effort "low" - le dial d'effort ne bornait pas ce
+        # cout comme attendu pour cette tache de classification bornee. Le
+        # reactiver (ANALYSIS_THINKING=true) reste possible si la qualite sans
+        # raisonnement s'avere insuffisante, au prix d'un cout et d'un temps de
+        # reponse nettement plus eleves.
+        self.thinking = thinking
         self._client = None
 
     @property
@@ -167,8 +175,12 @@ class AnthropicAnalyst:
         output_config: Dict[str, Any] = {
             "format": {"type": "json_schema", "schema": json_schema}
         }
-        if self.effort:
+        # L'effort ne s'applique qu'au raisonnement: sans lui, le sens de ce
+        # parametre est ambigu, donc on ne l'envoie que quand thinking est actif.
+        if self.thinking and self.effort:
             output_config["effort"] = self.effort
+
+        thinking_config = {"type": "adaptive"} if self.thinking else {"type": "disabled"}
 
         with self.client.messages.stream(
             model=model,
@@ -179,7 +191,7 @@ class AnthropicAnalyst:
                 {"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}
             ],
             messages=[{"role": "user", "content": user_content}],
-            thinking={"type": "adaptive"},
+            thinking=thinking_config,
             output_config=output_config,
         ) as stream:
             response = stream.get_final_message()
@@ -195,9 +207,14 @@ class AnthropicAnalyst:
         if response.stop_reason == "max_tokens":
             raise AnalysisUnavailable(
                 f"Reponse tronquee: le budget de {max_tokens} tokens a ete "
-                "entierement consomme (raisonnement inclus) avant la reponse "
-                "finale. Reessaie - le raisonnement adaptatif varie d'un appel "
-                "a l'autre - ou reduis ANALYSIS_EFFORT dans .env (high -> medium)."
+                "entierement consomme avant la reponse finale. "
+                + (
+                    "Le raisonnement adaptatif (ANALYSIS_THINKING=true) en est "
+                    "la cause probable - reduis ANALYSIS_EFFORT ou repasse "
+                    "ANALYSIS_THINKING a false dans .env."
+                    if self.thinking
+                    else "Reessaie: la longueur de reponse varie d'un appel a l'autre."
+                )
             )
 
         text = next((block.text for block in response.content if block.type == "text"), None)

@@ -104,6 +104,7 @@ def analyse_battle(
     api_key: str,
     model: str = "claude-sonnet-5",
     effort: str = "high",
+    thinking: bool = False,
     analyst: Optional[AnthropicAnalyst] = None,
 ) -> Dict[str, Any]:
     """Analyse un combat deja joue. UN seul appel API.
@@ -123,7 +124,7 @@ def analyse_battle(
         }
 
     taxonomy = load_taxonomy()
-    analyst = analyst or AnthropicAnalyst(api_key=api_key, effort=effort)
+    analyst = analyst or AnthropicAnalyst(api_key=api_key, effort=effort, thinking=thinking)
 
     result = analyst.structured_call(
         model=model,

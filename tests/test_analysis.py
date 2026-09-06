@@ -312,5 +312,79 @@ class TestCost(unittest.TestCase):
         self.assertEqual(estimate_cost("modele-inexistant", U()), 0.0)
 
 
+class _FakeUsage:
+    input_tokens = 10
+    output_tokens = 10
+    cache_read_input_tokens = 0
+    cache_creation_input_tokens = 0
+
+
+class _FakeStream:
+    """Simule client.messages.stream(...) as ... / .get_final_message()."""
+
+    def __init__(self, captured_kwargs, response):
+        self._kwargs = captured_kwargs
+        self._response = response
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+    def get_final_message(self):
+        return self._response
+
+
+class _FakeMessage:
+    def __init__(self, text):
+        block = type("Block", (), {"type": "text", "text": text})()
+        self.content = [block]
+        self.stop_reason = "end_turn"
+        self.usage = _FakeUsage()
+        self._request_id = "req_test"
+
+
+class TestThinkingConfiguration(unittest.TestCase):
+    """Le raisonnement adaptatif etait le vrai cout cache (mesure en conditions
+    reelles: ~12000-13000 tokens de sortie meme a effort 'low'). Ces tests
+    figent le comportement corrige: desactive par defaut, sans effort envoye
+    tant qu'il l'est."""
+
+    def _analyst_with_fake_client(self, **kwargs):
+        from analysis.client import AnthropicAnalyst
+
+        analyst = AnthropicAnalyst(api_key="test", **kwargs)
+        captured = {}
+
+        class _FakeMessagesResource:
+            def stream(self, **call_kwargs):
+                captured.update(call_kwargs)
+                return _FakeStream(captured, _FakeMessage('{"a": 1}'))
+
+        class _FakeClient:
+            messages = _FakeMessagesResource()
+
+        analyst._client = _FakeClient()
+        return analyst, captured
+
+    def test_raisonnement_desactive_par_defaut(self):
+        analyst, captured = self._analyst_with_fake_client()
+        analyst.structured_call("claude-sonnet-5", "system", "user", {"type": "object"})
+        self.assertEqual(captured["thinking"], {"type": "disabled"})
+        self.assertNotIn("effort", captured["output_config"])
+
+    def test_effort_non_envoye_sans_raisonnement(self):
+        analyst, captured = self._analyst_with_fake_client(effort="high")
+        analyst.structured_call("claude-sonnet-5", "system", "user", {"type": "object"})
+        self.assertNotIn("effort", captured["output_config"])
+
+    def test_raisonnement_active_explicitement(self):
+        analyst, captured = self._analyst_with_fake_client(thinking=True, effort="low")
+        analyst.structured_call("claude-sonnet-5", "system", "user", {"type": "object"})
+        self.assertEqual(captured["thinking"], {"type": "adaptive"})
+        self.assertEqual(captured["output_config"]["effort"], "low")
+
+
 if __name__ == "__main__":
     unittest.main()

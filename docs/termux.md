@@ -119,12 +119,13 @@ sans aucun serveur.
 ## Depannage
 
 **`Reponse tronquee: le budget de X tokens a ete entierement consomme`**
-L'appel API a reussi (200 OK) mais le raisonnement adaptatif a consomme tout le
-budget avant d'ecrire la reponse finale. `ANALYSIS_EFFORT=high` y est
-particulierement expose sur cette tache de classification ; `medium` (le
-defaut) suffit largement et laisse assez de marge. Si ca persiste meme en
-`medium`, relancez simplement - le raisonnement adaptatif varie d'un appel a
-l'autre a effort egal.
+Ne peut survenir qu'avec `ANALYSIS_THINKING=true` (desactive par defaut):
+l'appel API a reussi (200 OK) mais le raisonnement adaptatif a consomme tout
+le budget avant d'ecrire la reponse finale. Meme `ANALYSIS_EFFORT=low` s'est
+avere insuffisant a l'usage (~12000-13000 tokens de sortie mesures) - le
+reglage recommande est `ANALYSIS_THINKING=false`, qui evite completement ce
+symptome. Voir la section "Cout API" du README pour le detail de cette
+mesure.
 
 **`ModuleNotFoundError: No module named 'orjson'`**
 Le shim ne s'est pas active. Verifiez que vous importez bien `bot` avant
