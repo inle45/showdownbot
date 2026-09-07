@@ -184,23 +184,33 @@ BASELINES = {
 
 
 def cmd_selfplay(args, settings, config) -> int:
-    """Bot contre un adversaire de reference, sur le serveur local."""
+    """Bot contre un adversaire de reference, sur le serveur local.
+
+    Force le serveur local sans condition, quel que soit SHOWDOWN_SERVER dans
+    .env: selfplay n'a de sens qu'en local (l'adversaire n'a pas de compte
+    distinct pour se connecter ailleurs). Bug reel observe: un SHOWDOWN_SERVER
+    laisse sur "online" depuis une session ladder faisait tenter au bot de
+    reference une connexion invitee au serveur officiel, qui echouait a la
+    connexion (AssertionError: Expected <nom> to be logged in).
+    """
     import importlib
+    from dataclasses import replace
 
     from bot.connection import server_configuration
 
     module_name, class_name, description = BASELINES[args.opponent]
     opponent_class = getattr(importlib.import_module(module_name), class_name)
 
-    handler = make_battle_end_handler(settings)
+    local_settings = replace(settings, server="local")
+    handler = make_battle_end_handler(local_settings)
     level = player_log_level(args.verbose)
     LOGGER.info("Adversaire: %s (%s)", args.opponent, description)
 
     async def run():
-        player = build_player(settings, config, on_battle_end=handler, log_level=level)
+        player = build_player(local_settings, config, on_battle_end=handler, log_level=level)
         opponent = opponent_class(
-            server_configuration=server_configuration(settings),
-            battle_format=settings.battle_format,
+            server_configuration=server_configuration(local_settings),
+            battle_format=local_settings.battle_format,
             max_concurrent_battles=1,
             log_level=level,
         )
