@@ -87,7 +87,7 @@ def make_battle_end_handler(settings):
 def _consolidate_and_tune(settings) -> None:
     from analysis.client import AnalysisUnavailable
     from analysis.consolidate import consolidate
-    from analysis.tuner import apply_proposal, check_rollback, propose, save_pending
+    from analysis.tuner import apply_proposal, check_rollback, load_pending, propose, save_pending
 
     try:
         summary = consolidate(
@@ -112,6 +112,21 @@ def _consolidate_and_tune(settings) -> None:
             return
     except Exception:
         LOGGER.exception("La verification de rollback a echoue")
+
+    # En mode "propose", une proposition deja calculee et pas encore tranchee
+    # ne doit jamais etre ecrasee en silence par le cycle suivant. Observe en
+    # conditions reelles sur une session de ladder toute la nuit sans
+    # surveillance: sur ~70 combats (~7 declenchements automatiques possibles
+    # a raison d'un tous les 10 combats), seules les 2 propositions attrapees
+    # a temps ont fini par s'appliquer - les autres ont ete remplacees avant
+    # meme d'avoir pu etre vues.
+    if settings.tuning_mode != "auto" and load_pending() is not None:
+        LOGGER.info(
+            "Une proposition attend deja ton approbation, calcul du prochain "
+            "cycle reporte. Valide-la (python -m bot.cli tune --apply) ou "
+            "rejette-la pour debloquer le prochain cycle."
+        )
+        return
 
     try:
         proposal = propose()
